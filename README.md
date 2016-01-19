@@ -1,1 +1,1 @@
-# LearnSparkJava
+# LearnSpark
