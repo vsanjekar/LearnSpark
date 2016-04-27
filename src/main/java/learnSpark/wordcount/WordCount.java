@@ -1,4 +1,4 @@
-package learnSpark;
+package learnSpark.wordcount;
 
 /**
  * Created by vsanjekar on 1/13/16.
@@ -20,7 +20,7 @@ public class WordCount {
 
         final SparkConf sparkConf = new SparkConf();
         sparkConf.setAppName("SparkWordCountJava");
-        sparkConf.setMaster("local[2]"); // Two thread
+        sparkConf.setMaster("local[4]"); // Four threads
 
         final JavaSparkContext javaSparkContext = new JavaSparkContext(sparkConf);
 
@@ -36,9 +36,9 @@ public class WordCount {
         final JavaRDD<String> javaRDDWords = javaRDDLines.flatMap(line -> Arrays.asList(line.split(" ")));
         final JavaPairRDD<String, Integer> pairRDD = javaRDDWords.mapToPair(word -> new Tuple2<String, Integer>(word, 1));
         final JavaPairRDD<String, Integer> wordCounts = pairRDD.reduceByKey((a, b) -> a+b);
-        wordCounts.saveAsTextFile("target/output-"+Double.valueOf(System.currentTimeMillis()/1000).toString());
-
+        wordCounts.saveAsTextFile("target/output-"+Double.valueOf(System.currentTimeMillis()/1000000).toString());
         // wordCounts.collect().forEach(System.out::println);
+
         javaSparkContext.stop();
     }
 }
