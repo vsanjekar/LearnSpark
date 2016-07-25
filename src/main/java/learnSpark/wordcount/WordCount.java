@@ -11,7 +11,6 @@ import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class WordCount {
 
@@ -30,13 +29,14 @@ public class WordCount {
                 "My name is Vinay",
                 "This is spark example");
         final JavaRDD<String> javaRDDLines = javaSparkContext.parallelize(data);
-         */
+        */
 
         final JavaRDD<String> javaRDDLines = javaSparkContext.textFile("4300.txt");
         final JavaRDD<String> javaRDDWords = javaRDDLines.flatMap(line -> Arrays.asList(line.split(" ")));
         final JavaPairRDD<String, Integer> pairRDD = javaRDDWords.mapToPair(word -> new Tuple2<String, Integer>(word, 1));
         final JavaPairRDD<String, Integer> wordCounts = pairRDD.reduceByKey((a, b) -> a+b);
-        wordCounts.saveAsTextFile("target/output-"+Double.valueOf(System.currentTimeMillis()/1000000).toString());
+        final JavaPairRDD<String, Integer> wordCountsFiltered = wordCounts.filter(a-> (a._2()>10));
+        wordCountsFiltered.saveAsTextFile("target/output-"+Double.valueOf(System.currentTimeMillis()/1000).toString());
         // wordCounts.collect().forEach(System.out::println);
 
         javaSparkContext.stop();
