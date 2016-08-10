@@ -8,6 +8,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.Function;
 import scala.Tuple2;
 
 import java.io.Serializable;
@@ -43,14 +44,15 @@ public class WordProcessing {
 
         final JavaRDD<String> javaRDDLines = javaSparkContext.textFile("4300.txt");
         final JavaRDD<String> javaRDDWords = javaRDDLines.flatMap(line -> Arrays.asList(line.split(" ")).iterator());
-        final JavaPairRDD<String, Integer> pairRDD = javaRDDWords.mapToPair(word -> new Tuple2<String, Integer>(word, 1));
+        final JavaPairRDD<String, Integer> pairRDD = javaRDDWords.mapToPair(word -> new Tuple2<>(word, 1));
         final JavaPairRDD<String, Integer> wordCountsRDD = pairRDD.reduceByKey((a, b) -> a+b);
         String fileName = String.valueOf(System.currentTimeMillis());
         // wordCountsRDD.collect().forEach(System.out::println);
         wordCountsRDD.saveAsTextFile("target/"+fileName+"_wordcount");
 
         // Get the words with count more than N=10
-        final JavaPairRDD<String, Integer> wordCountsMoreThanTenRDD = wordCountsRDD.filter(a-> (a._2()>10));
+        Function<Tuple2<String, Integer>, Boolean> greaterThanN = e -> (e._2 > 10);
+        final JavaPairRDD<String, Integer> wordCountsMoreThanTenRDD = wordCountsRDD.filter(greaterThanN);
         wordCountsMoreThanTenRDD.saveAsTextFile("target/"+fileName+"_wordcount_more_than_10");
 
         // Get Top N=10 words
